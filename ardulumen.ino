@@ -1,16 +1,29 @@
+
+
 /*
  * ardulumen - LED Control for ESP32
  * Created by autinerd and margau
  */
 
 // Libarys for basic functions
-#include <Preferences.h>
-#include <WiFi.h>
+// ESP32 specific
+#if defined(ESP32)
+  #include <Preferences.h>
+  #include <WiFiAP.h>
+  #include <WiFi.h>
+#endif
+// ESP8266 specific
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+#endif
+
 #include <WiFiClient.h>
-#include <WiFiAP.h>
+#include <Adafruit_NeoPixel.h>
+
 
 // Initialize Objects
-Preferences prefs;
+// Preferences prefs;
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
 
 // Some constants
 #define VERSION "0.0.1-dev"
@@ -21,14 +34,19 @@ void setup() {
   Serial.print("ardulumen v");
   Serial.println(VERSION);
   // Initialize Preferences
-  prefs.begin("ardulumen");
+  // prefs.begin("ardulumen");
   // Initialize WiFi AP
-  char apName[30];
-  prefs.getString("apName","ardulumen").toCharArray(apName, 50);
+  char apName[30] = "ardulumen";
+  // prefs.getString("apName","ardulumen").toCharArray(apName, 50);
   Serial.print("Create AP with SSID "); Serial.println(apName);
   WiFi.softAP(apName);
+
+  strip.begin();
+  strip.show();
+
 }
 
 void loop() {
-  
+  strip.setPixelColor(0, strip.Color(255, 0, 0));
+  strip.show();
 }
