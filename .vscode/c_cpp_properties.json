@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${env:USERPROFILE}\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel",
+                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\tools\\**",
+                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "C:\\Users\\kuyateh\\scoop\\apps\\perl\\current\\c\\bin\\gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "defines": ["ESP8266"]
+        }
+    ],
+    "version": 4
+}
