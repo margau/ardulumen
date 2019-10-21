@@ -55,12 +55,12 @@ void setup() {
 }
 
 void loop() {
-  strip.setPixelColor(0, strip.Color(255, 0, 0));
-  strip.show();
+  //strip.setPixelColor(0, strip.Color(255, 0, 0));
+  //strip.show();
 
   now = millis();
-  if((now - last_frame) > frame_delay) {
+  if((now - last_frame) >= frame_delay) {
     last_frame = now;
-    Serial.println("Render Frame");
+    animation.render();
   }
 }
