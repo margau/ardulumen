@@ -31,6 +31,11 @@ PixelPP animation = PixelPP(16, COLOR_RGB);
 // Some constants
 #define VERSION "0.0.1-dev"
 
+// Timing
+unsigned long last_frame = 0;
+unsigned long frame_delay = 40;
+unsigned long now = 0;
+
 void setup() {
   // Boot and init debug
   Serial.begin(115200);
@@ -52,4 +57,10 @@ void setup() {
 void loop() {
   strip.setPixelColor(0, strip.Color(255, 0, 0));
   strip.show();
+
+  now = millis();
+  if((now - last_frame) > frame_delay) {
+    last_frame = now;
+    Serial.println("Render Frame");
+  }
 }
