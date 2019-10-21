@@ -1,0 +1,3 @@
+[submodule "pixelpp"]
+	path = pixelpp
+	url = https://github.com/margau/pixelpp.git
