@@ -18,8 +18,10 @@
 #endif
 
 #include <WiFiClient.h>
-#include <Adafruit_NeoPixel.h>
 
+// LED-specific libarys
+#include <Adafruit_NeoPixel.h>
+#include "pixelpp/PixelPP.h"
 
 // Initialize Objects
 // Preferences prefs;
