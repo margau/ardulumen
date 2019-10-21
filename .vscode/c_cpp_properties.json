@@ -12,7 +12,7 @@
             "compilerPath": "C:\\Users\\kuyateh\\scoop\\apps\\perl\\current\\c\\bin\\gcc.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "defines": ["ESP8266"]
+            "defines": ["ESP8266","ARDUINO=101"]
         }
     ],
     "version": 4
