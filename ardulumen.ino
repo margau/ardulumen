@@ -21,11 +21,12 @@
 
 // LED-specific libarys
 #include <Adafruit_NeoPixel.h>
-#include "pixelpp/PixelPP.h"
+#include "src/pixelpp/PixelPP.h"
 
 // Initialize Objects
 // Preferences prefs;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
+PixelPP animation = PixelPP(16, COLOR_RGB);
 
 // Some constants
 #define VERSION "0.0.1-dev"
@@ -41,7 +42,7 @@ void setup() {
   char apName[30] = "ardulumen";
   // prefs.getString("apName","ardulumen").toCharArray(apName, 50);
   Serial.print("Create AP with SSID "); Serial.println(apName);
-  WiFi.softAP(apName);
+//  WiFi.softAP(apName);
 
   strip.begin();
   strip.show();
