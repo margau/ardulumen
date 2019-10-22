@@ -22,6 +22,8 @@
 // LED-specific libarys
 #include <Adafruit_NeoPixel.h>
 #include "src/pixelpp/PixelPP.h"
+#include "src/pixelpp/FillEffect.hpp"
+#include "src/pixelpp/SineEffect.hpp"
 
 // Initialize Objects
 // Preferences prefs;
@@ -47,6 +49,8 @@ void setup() {
   char apName[30] = "ardulumen";
   // prefs.getString("apName","ardulumen").toCharArray(apName, 50);
   Serial.print("Create AP with SSID "); Serial.println(apName);
+  animation.addEffect(FillEffect(animation, (rgb){255, 0, 0}));
+  animation.addEffect(SineEffect(animation, 10));
 //  WiFi.softAP(apName);
 
   strip.begin();

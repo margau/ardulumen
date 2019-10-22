@@ -5,7 +5,9 @@
             "includePath": [
                 "${env:USERPROFILE}\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel",
                 "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\tools\\**",
-                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**"
+                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**",
+                "/home/sidney/.arduino15/packages/esp8266/hardware/esp8266/2.5.2/**",
+                "/home/sidney/.arduino15/packages/esp8266/tools/**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",
@@ -25,11 +27,13 @@
                 "${env:HOME}/Arduino/libraries/Adafruit_NeoPixel"
             ],
             "forcedInclude": [],
-            "defines": ["ESP8266",
-                "ARDUINO=101"],
-                "intelliSenseMode": "gcc-x64",
-                "cStandard": "c11",
-                "cppStandard": "c++17"
+            "defines": [
+                "ESP8266",
+                "ARDUINO=101"
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4
