@@ -26,7 +26,7 @@
 // Initialize Objects
 // Preferences prefs;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
-PixelPP animation = PixelPP(16, COLOR_RGB);
+PixelPP animation = PixelPP(16, COLOR_RGB, strip.getPixels());
 
 // Some constants
 #define VERSION "0.0.1-dev"
@@ -51,7 +51,6 @@ void setup() {
 
   strip.begin();
   strip.show();
-
 }
 
 void loop() {
@@ -62,5 +61,6 @@ void loop() {
   if((now - last_frame) >= frame_delay) {
     last_frame = now;
     animation.render();
+    strip.show();
   }
 }
