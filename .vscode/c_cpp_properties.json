@@ -12,7 +12,24 @@
             "compilerPath": "C:\\Users\\kuyateh\\scoop\\apps\\perl\\current\\c\\bin\\gcc.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "defines": ["ESP8266","ARDUINO=101"]
+            "defines": [
+                "ESP8266",
+                "ARDUINO=101"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${env:HOME}/.arduino15/packages/esp8266/tools/**",
+                "${env:HOME}/.arduino15/packages/esp8266/hardware/esp8266/2.5.2/**",
+                "${env:HOME}/Arduino/libraries/Adafruit_NeoPixel"
+            ],
+            "forcedInclude": [],
+            "defines": ["ESP8266",
+                "ARDUINO=101"],
+                "intelliSenseMode": "gcc-x64",
+                "cStandard": "c11",
+                "cppStandard": "c++17"
         }
     ],
     "version": 4
