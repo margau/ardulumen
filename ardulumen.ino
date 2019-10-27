@@ -1,5 +1,3 @@
-
-
 /*
  * ardulumen - LED Control for ESP32
  * Created by autinerd and margau
@@ -49,8 +47,10 @@ void setup() {
   char apName[30] = "ardulumen";
   // prefs.getString("apName","ardulumen").toCharArray(apName, 50);
   Serial.print("Create AP with SSID "); Serial.println(apName);
-  animation.addEffect(FillEffect(animation, (rgb){255, 0, 0}));
-  animation.addEffect(SineEffect(animation, 10));
+  FillEffect effect_f = FillEffect(&animation, (rgb){255, 0, 0});
+  SineEffect effect_s = SineEffect(&animation, 10);
+  animation.addEffect(effect_f);
+  animation.addEffect(effect_s);
 //  WiFi.softAP(apName);
 
   strip.begin();
