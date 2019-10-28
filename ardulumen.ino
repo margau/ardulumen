@@ -9,9 +9,8 @@
 	#include <Preferences.h>
 	#include <WiFiAP.h>
 	#include <WiFi.h>
-#endif
+#elif defined(ESP8266)
 // ESP8266 specific
-#if defined(ESP8266)
 	#include <ESP8266WiFi.h>
 #endif
 
@@ -26,14 +25,14 @@
 // Initialize Objects
 // Preferences prefs;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
-PixelPP animation = PixelPP(16, COLOR_RGB, strip.getPixels());
+PixelPP* animation = new PixelPP(65, COLOR_RGB, strip.getPixels());
 
 // Some constants
 #define VERSION "0.0.1-dev"
 
 // Timing
 unsigned long last_frame = 0;
-unsigned long frame_delay = 40;
+const unsigned long frame_delay = 20;
 unsigned long now = 0;
 
 void setup()
@@ -48,10 +47,8 @@ void setup()
 	char apName[30] = "ardulumen";
 	// prefs.getString("apName","ardulumen").toCharArray(apName, 50);
 	Serial.print("Create AP with SSID "); Serial.println(apName);
-	FillEffect* effect_f = new FillEffect(&animation, (rgb){255, 0, 0});
-	SineEffect* effect_s = new SineEffect(&animation, 10);
-	animation.addEffect(effect_f);
-	animation.addEffect(effect_s);
+	animation->addEffect(new FillEffect(animation, (rgb){255, 0, 0}))
+			 ->addEffect(new SineEffect(animation, 25));
 	//  WiFi.softAP(apName);
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
@@ -64,8 +61,9 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
+		Serial.print(now - last_frame);
 		last_frame = now;
-		animation.render();
+		animation->render();
 		strip.show();
 	}
 }
