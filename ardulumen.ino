@@ -48,7 +48,7 @@ void setup()
 	// prefs.getString("apName","ardulumen").toCharArray(apName, 50);
 	Serial.print("Create AP with SSID "); Serial.println(apName);
 	animation->addEffect(new FillEffect(animation, (rgb){255, 0, 0}))
-			 ->addEffect(new SineEffect(animation, 25));
+			 ->addEffect(new SineEffect(animation, 50, 10000));
 	//  WiFi.softAP(apName);
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
@@ -61,7 +61,6 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
-		Serial.print(now - last_frame);
 		last_frame = now;
 		animation->render();
 		strip.show();
