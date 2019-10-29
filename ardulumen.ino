@@ -61,7 +61,7 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
-		Serial.print(now - last_frame);
+		Serial.println(now - last_frame);
 		last_frame = now;
 		animation->render();
 		strip.show();

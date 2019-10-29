@@ -9,7 +9,6 @@
             ],
             "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",
-            "compilerPath": "C:\\Users\\kuyateh\\scoop\\apps\\perl\\current\\c\\bin\\gcc.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "defines": [
