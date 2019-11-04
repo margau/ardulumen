@@ -21,6 +21,7 @@
 #include "src/pixelpp/PixelPP.h"
 #include "src/pixelpp/FillEffect.hpp"
 #include "src/pixelpp/SineEffect.hpp"
+#include "src/pixelpp/PixEffect.hpp"
 
 // Initialize Objects
 // Preferences prefs;
@@ -47,8 +48,10 @@ void setup()
 	char apName[30] = "ardulumen";
 	// prefs.getString("apName","ardulumen").toCharArray(apName, 50);
 	Serial.print("Create AP with SSID "); Serial.println(apName);
-	animation->addEffect(new FillEffect(animation, (rgb){255, 0, 0}))
-			 ->addEffect(new SineEffect(animation, 25, 10000));
+	animation->addEffect(new FillEffect(animation, (rgb){127, 0, 0}))
+        ->addEffect(new SineEffect(animation, 25, 2000))
+	      ->addEffect(new PixEffect(animation, (rgb){0, 0, 255}, 500, 1));
+  
 	//  WiFi.softAP(apName);
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
@@ -61,7 +64,6 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
-		Serial.println(now - last_frame);
 		last_frame = now;
 		animation->render();
 		strip.show();
