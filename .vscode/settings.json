@@ -1,3 +1,6 @@
 {
-    "arduino.logLevel": "verbose"
+    "arduino.logLevel": "verbose",
+    "files.associations": {
+        "typeinfo": "cpp"
+    }
 }
