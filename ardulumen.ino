@@ -57,10 +57,20 @@ void setup()
 	// setup Wifi
 	WiFi.begin("ardulumen", emptyString);
 
+	//client.setTimeout(50000);
+
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
 	strip.show();
-	delay(2000);
+	delay(5000);
+	if (WiFi.isConnected())
+	{
+		Serial.println("WiFi connected!");
+	}
+	else
+	{
+		Serial.println("WiFi not connected!");
+	}
 }
 
 void loop()
@@ -75,15 +85,28 @@ void loop()
 	if ((now - last_poll) >= polling_delay)
 	{
 		last_poll = now;
-		if (client.begin("http://" + WiFi.gatewayIP().toString() + (currentInstance == -1) ? "/led" : ("/led?instance=" + currentInstance)))
+		uint32_t now2 = millis();
+		String url = "http://" + WiFi.gatewayIP().toString() + ((currentInstance == -1) ? "/led" : ("/led?instance=" + currentInstance));
+		if (client.begin(url))
 		{
 			int httpCode = client.GET();
+			Serial.println("Duration: " + String(millis() - now2));
+			Serial.println("Connected to " + url);
 			if (httpCode == HTTP_CODE_OK)
 			{
 				deserializeJson(json, client.getString());
+				Serial.println(client.getString());
 				analyzeRecievedJson();
 			}
+			else
+			{
+				Serial.println("Error " + String(httpCode) + ": " + client.getString());
+			}
 			client.end();
+		}
+		else
+		{
+			Serial.println("Error connecting to " + url);
 		}
 	}
 }
@@ -121,6 +144,7 @@ void analyzeRecievedJson()
 	{
 		return;
 	}
+	Serial.println("JSON accepted!");
 	animation->clearEffects();
 	JsonArray effects = json["effects"];
 	for (int8_t i = 0; i < effects.size(); i++)
