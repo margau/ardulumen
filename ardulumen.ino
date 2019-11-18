@@ -100,9 +100,10 @@ void loop()
 			}
 			else
 			{
-				Serial.println("Error " + String(httpCode) + ": " + client.getString());
+				Serial.println("Error " + String(httpCode) + ": " + client.errorToString(httpCode));
 			}
 			client.end();
+			Serial.println("Connection closed.");
 		}
 		else
 		{
@@ -156,3 +157,14 @@ void analyzeRecievedJson()
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
 	}
 }
+
+
+/**
+ *
+   ▒cl`{▒o$phardulumen v0.0.1-dev
+WiFi connected!
+Duration: 43
+Connected to http://192.168.4.1/led
+{"instance":0,"serial":0,"effect":1,"filename":"/effect1.json","effects":[{"type":"fill","color":512},{"type":"sine","w":25,"p":2000},{"type":"pix","color":16711680,"f":200,"c":1}]}
+JSON accepted!
+*/
