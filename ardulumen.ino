@@ -82,33 +82,37 @@ void loop()
 		animation->render();
 		strip.show();
 	}
-	if ((now - last_poll) >= polling_delay)
+ 	if ((now - last_poll) >= polling_delay)
 	{
 		last_poll = now;
-		uint32_t now2 = millis();
-		String url = "http://" + WiFi.gatewayIP().toString() + ((currentInstance == -1) ? "/led" : ("/led?instance=" + currentInstance));
-		if (client.begin(url))
-		{
-			int httpCode = client.GET();
-			Serial.println("Duration: " + String(millis() - now2));
-			Serial.println("Connected to " + url);
-			if (httpCode == HTTP_CODE_OK)
-			{
-				deserializeJson(json, client.getString());
-				Serial.println(client.getString());
-				analyzeRecievedJson();
-			}
-			else
-			{
-				Serial.println("Error " + String(httpCode) + ": " + client.errorToString(httpCode));
-			}
-			client.end();
-			Serial.println("Connection closed.");
-		}
-		else
-		{
-			Serial.println("Error connecting to " + url);
-		}
+     // only poll if we have wifi
+    if (WiFi.isConnected())
+    {
+  		uint32_t now2 = millis();
+  		String url = "http://" + WiFi.gatewayIP().toString() + ((currentInstance == -1) ? "/led" : ("/led?instance=" + currentInstance));
+  		if (client.begin(url))
+  		{
+  			int httpCode = client.GET();
+  			Serial.println("Duration: " + String(millis() - now2));
+  			Serial.println("Connected to " + url);
+  			if (httpCode == HTTP_CODE_OK)
+  			{
+  				deserializeJson(json, client.getString());
+  				Serial.println(client.getString());
+  				analyzeRecievedJson();
+  			}
+  			else
+  			{
+  				Serial.println("Error " + String(httpCode) + ": " + client.errorToString(httpCode));
+  			}
+  			client.end();
+  			Serial.println("Connection closed.");
+  		}
+  		else
+  		{
+  			Serial.println("Error connecting to " + url);
+  		}
+    }
 	}
 }
 /**
