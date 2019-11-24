@@ -30,7 +30,7 @@
 HTTPClient client;
 StaticJsonDocument<1024> json;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
-PixelPP* animation = new PixelPP(65, strip.getPixels(), LEDColor::GRB);
+PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor::GRB);
 
 // Some constants
 #define VERSION "0.0.1-dev"
