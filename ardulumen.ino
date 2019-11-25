@@ -15,6 +15,7 @@
 // ESP8266 specific
 	#include <ESP8266WiFi.h>
 	#include <ESP8266HTTPClient.h>
+	#include <WiFiUdp.h>
 #endif
 
 // LED-specific libarys
@@ -27,10 +28,12 @@
 
 // Initialize Objects
 // Preferences prefs;
-HTTPClient client;
+// HTTPClient* client = new HTTPClient();
+WiFiUDP Udp;
 StaticJsonDocument<1024> json;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
 PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor::GRB);
+uint8_t incomingPacket[1024];
 
 // Some constants
 #define VERSION "0.0.1-dev"
@@ -57,7 +60,11 @@ void setup()
 	// setup Wifi
 	WiFi.begin("ardulumen", emptyString);
 
-	//client.setTimeout(50000);
+	Udp.setTimeout(1000);
+
+	Udp.begin(3333);
+
+	// client->setTimeout(1000);
 
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
@@ -78,41 +85,24 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
+		Serial.println("Frame render");
 		last_frame = now;
 		animation->render();
 		strip.show();
 	}
- 	if ((now - last_poll) >= polling_delay)
+
+
+	if (Udp.parsePacket())
 	{
-		last_poll = now;
-     // only poll if we have wifi
-    if (WiFi.isConnected())
-    {
-  		uint32_t now2 = millis();
-  		String url = "http://" + WiFi.gatewayIP().toString() + ((currentInstance == -1) ? "/led" : ("/led?instance=" + currentInstance));
-  		if (client.begin(url))
-  		{
-  			int httpCode = client.GET();
-  			Serial.println("Duration: " + String(millis() - now2));
-  			Serial.println("Connected to " + url);
-  			if (httpCode == HTTP_CODE_OK)
-  			{
-  				deserializeJson(json, client.getString());
-  				Serial.println(client.getString());
-  				analyzeRecievedJson();
-  			}
-  			else
-  			{
-  				Serial.println("Error " + String(httpCode) + ": " + client.errorToString(httpCode));
-  			}
-  			client.end();
-  			Serial.println("Connection closed.");
-  		}
-  		else
-  		{
-  			Serial.println("Error connecting to " + url);
-  		}
-    }
+		Serial.println("Received data");
+		int len = Udp.read(incomingPacket, 1024);
+		if (len > 0)
+		{
+			incomingPacket[len] = 0;
+		}
+		deserializeJson(json, incomingPacket);
+		Serial.println((char*)incomingPacket);
+		analyzeRecievedJson();
 	}
 }
 /**
@@ -149,6 +139,7 @@ void analyzeRecievedJson()
 	{
 		return;
 	}
+	currentSequence = json["serial"].as<int16_t>();
 	Serial.println("JSON accepted!");
 	animation->clearEffects();
 	JsonArray effects = json["effects"];
@@ -156,6 +147,7 @@ void analyzeRecievedJson()
 	{
 		JsonObject effect = effects[i];
 		String effectType = effect["type"].as<String>();
+		Serial.println("Found effect: " + effectType);
 		IfEffect("fill", FillEffect, ColorToRGB(effect["color"].as<uint32_t>()))
 		else IfEffect("sine", SineEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
