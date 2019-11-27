@@ -15,7 +15,7 @@
 // ESP8266 specific
 	#include <ESP8266WiFi.h>
 	#include <ESP8266HTTPClient.h>
-	#include <WiFiUdp.h>
+  #include "ESPAsyncUDP.h"  
 #endif
 
 // LED-specific libarys
@@ -29,7 +29,7 @@
 // Initialize Objects
 // Preferences prefs;
 // HTTPClient* client = new HTTPClient();
-WiFiUDP Udp;
+AsyncUDP udp;
 StaticJsonDocument<1024> json;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
 PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor::GRB);
@@ -53,16 +53,12 @@ void setup()
 	Serial.begin(115200);
 	Serial.print("ardulumen v");
 	Serial.println(VERSION);
-	animation->addEffect(new FillEffect(animation, {127, 0, 0}))
+	animation->addEffect(new FillEffect(animation, {127, 0, 0}))->addEffect(new FillEffect(animation, {127, 0, 0}))
 			 ->addEffect(new SineEffect(animation, 25, 2000))
 			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
 
 	// setup Wifi
 	WiFi.begin("ardulumen", emptyString);
-
-	Udp.setTimeout(1000);
-
-	Udp.begin(3333);
 
 	// client->setTimeout(1000);
 
@@ -78,6 +74,19 @@ void setup()
 	{
 		Serial.println("WiFi not connected!");
 	}
+  // Listen on UDP Socket with callback
+  if(udp.listen(3333)) {
+    Serial.println("Listening on Port 3333");
+        udp.onPacket([](AsyncUDPPacket packet) {
+          Serial.println("Received data");
+          size_t len = packet.length();
+          strcpy((char*)incomingPacket, (char*)packet.data());
+          deserializeJson(json, incomingPacket);
+          analyzeRecievedJson();
+        });
+   } else {
+      Serial.println("Failure Listening to UDP");
+   }
 }
 
 void loop()
@@ -85,50 +94,12 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
-		Serial.println("Frame render");
 		last_frame = now;
 		animation->render();
 		strip.show();
 	}
-
-
-	if (Udp.parsePacket())
-	{
-		Serial.println("Received data");
-		int len = Udp.read(incomingPacket, 1024);
-		if (len > 0)
-		{
-			incomingPacket[len] = 0;
-		}
-		deserializeJson(json, incomingPacket);
-		Serial.println((char*)incomingPacket);
-		analyzeRecievedJson();
-	}
+ delay(1);
 }
-/**
- * {
- *	"instance": 0,
- *	"serial": 0,
- *	"effects":
- *		[
- *			{
- *				"type": "fill",
- *				"color": 16711680
- *			},
- *			{
- *				"type": "sine",
- *				"w": 25,
- *				"p": 2000
- *			},
- *			{
- *				"type": "pix",
- *				"color": 16711680,
- *				"f": 200,
- *				"c": 1
- *			}
- *		]
- * }
- */
 void analyzeRecievedJson()
 {
 	if (currentInstance == -1)
@@ -148,19 +119,18 @@ void analyzeRecievedJson()
 		JsonObject effect = effects[i];
 		String effectType = effect["type"].as<String>();
 		Serial.println("Found effect: " + effectType);
-		IfEffect("fill", FillEffect, ColorToRGB(effect["color"].as<uint32_t>()))
+		/*IfEffect("fill", FillEffect, ColorToRGB(effect["color"].as<uint32_t>()))
 		else IfEffect("sine", SineEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
-		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
+		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())*/
+    if(effectType=="fill") {
+      Serial.println("Fill Effect");
+      animation->addEffect(new FillEffect(animation, {127, 0, 0}));
+    } else if(effectType=="sine") {
+      Serial.println("Sine Effect");
+      animation->addEffect(new SineEffect(animation, 25, 2000));
+    } else if(effectType=="pix") {
+      Serial.println("Pix Effect");
+      animation->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
+    }
 	}
 }
-
-
-/**
- *
-   ▒cl`{▒o$phardulumen v0.0.1-dev
-WiFi connected!
-Duration: 43
-Connected to http://192.168.4.1/led
-{"instance":0,"serial":0,"effect":1,"filename":"/effect1.json","effects":[{"type":"fill","color":512},{"type":"sine","w":25,"p":2000},{"type":"pix","color":16711680,"f":200,"c":1}]}
-JSON accepted!
-*/
