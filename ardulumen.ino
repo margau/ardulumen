@@ -53,7 +53,7 @@ void setup()
 	Serial.begin(115200);
 	Serial.print("ardulumen v");
 	Serial.println(VERSION);
-	animation->addEffect(new FillEffect(animation, {127, 0, 0}))->addEffect(new FillEffect(animation, {127, 0, 0}))
+	animation->addEffect(new FillEffect(animation, {127,0,0}))
 			 ->addEffect(new SineEffect(animation, 25, 2000))
 			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
 
@@ -100,6 +100,13 @@ void loop()
 	}
  delay(1);
 }
+struct rgb ColorToRGB(uint32_t c) {
+  rgb color = {0,0,0};
+  color.red = ((c >> 16) & 0xFF);
+  color.green = ((c >> 8) & 0xFF);
+  color.blue = ((c) & 0xFF);
+  return color;
+}
 void analyzeRecievedJson()
 {
 	if (currentInstance == -1)
@@ -124,13 +131,13 @@ void analyzeRecievedJson()
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())*/
     if(effectType=="fill") {
       Serial.println("Fill Effect");
-      animation->addEffect(new FillEffect(animation, {127, 0, 0}));
+      animation->addEffect(new FillEffect(animation, ColorToRGB(effect["color"].as<uint32_t>())));
     } else if(effectType=="sine") {
       Serial.println("Sine Effect");
-      animation->addEffect(new SineEffect(animation, 25, 2000));
+      animation->addEffect(new SineEffect(animation, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>()));
     } else if(effectType=="pix") {
       Serial.println("Pix Effect");
-      animation->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
+      animation->addEffect(new PixEffect(animation, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>()));
     }
 	}
 }
