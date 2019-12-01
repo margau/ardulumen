@@ -113,6 +113,10 @@ void analyzeRecievedJson()
 	{
 		currentInstance = json["instance"].as<int16_t>();
 	}
+  // Reset Sequence if master restarted
+  if(json["runtime"].as<int16_t>() < (now - last_frame)) {
+    currentSequence = 0;  
+  }
 	if (json["serial"].as<int16_t>() <= currentSequence || json["instance"].as<int16_t>() != currentInstance)
 	{
 		return;
