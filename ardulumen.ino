@@ -3,8 +3,6 @@
  * Created by autinerd and margau
  */
 
-#define IfEffect(effect,class,...) if (effectType == effect) {animation->addEffect(new class(animation, __VA_ARGS__));}
-
 // Libarys for basic functions
 // ESP32 specific
 #if defined(ESP32)
@@ -15,7 +13,7 @@
 // ESP8266 specific
 	#include <ESP8266WiFi.h>
 	#include <ESP8266HTTPClient.h>
-  #include "ESPAsyncUDP.h"  
+  #include "ESPAsyncUDP.h"
 #endif
 
 // LED-specific libarys
@@ -25,47 +23,83 @@
 #include "src/pixelpp/FillEffect.hpp"
 #include "src/pixelpp/SineEffect.hpp"
 #include "src/pixelpp/PixEffect.hpp"
+#include "FS.h"
 
 // Initialize Objects
-// Preferences prefs;
-// HTTPClient* client = new HTTPClient();
 AsyncUDP udp;
 StaticJsonDocument<1024> json;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
 PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor::GRB);
 uint8_t incomingPacket[1024];
 
+WiFiEventHandler mConnectHandler;
+
+
 // Some constants
 #define VERSION "0.0.1-dev"
+#define SEQUENCE_FILE_PATH "/sequence.json"
+#define IfEffect(effect,class,...) if (effectType == effect) \
+									{ \
+									Serial.println(#class " recognized"); \
+									animation->addEffect(new class(animation, __VA_ARGS__)); \
+									}
 
 // Timing
-unsigned long last_frame = 0;
-const unsigned long frame_delay = 20;
-unsigned long last_poll = 0UL;
-const unsigned int polling_delay = 1000U;
-unsigned long now = 0;
-int16_t currentSequence = -1;
+uint32_t last_frame = 0;
+const uint32_t frame_delay = 20;
+uint32_t last_poll = 0UL;
+const uint32_t polling_delay = 1000U;
+uint32_t now = 0;
+int32_t currentSequence = -1;
 int16_t currentInstance = -1;
+File sequenceFile;
 
 void setup()
 {
 	// Boot and init debug
 	Serial.begin(115200);
-	Serial.print("ardulumen v");
-	Serial.println(VERSION);
-	animation->addEffect(new FillEffect(animation, {127,0,0}))
-			 ->addEffect(new SineEffect(animation, 25, 2000))
-			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
+	Serial.println("ardulumen v" VERSION);
 
 	// setup Wifi
 	WiFi.begin("ardulumen", emptyString);
 
-	// client->setTimeout(1000);
+	// setup SPIFFS
+	SPIFFS.begin();
+	if (SPIFFS.exists(SEQUENCE_FILE_PATH))
+	{
+		Serial.println("File found!");
+		sequenceFile = SPIFFS.open(SEQUENCE_FILE_PATH, "r+");
+		deserializeJson(json, sequenceFile);
+		json["serial"] = 0;
+		currentSequence = -2;
+		analyzeRecievedJson();
+	}
+	else
+	{
+		Serial.println("File not found!");
+		sequenceFile = SPIFFS.open(SEQUENCE_FILE_PATH, "w+");
+		animation->addEffect(new FillEffect(animation, {127,0,0}))
+			 ->addEffect(new SineEffect(animation, 25, 2000))
+			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
+	}
 
+	// setup strip
 	strip.begin();
 	strip.setPixelColor(0,0,255,0);
 	strip.show();
+
 	delay(5000);
+
+	mConnectHandler = WiFi.onStationModeConnected([](WiFiEventStationModeConnected e) {
+		Serial.println("Wifi connected as event");
+	});
+
+	WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP e) {
+		Serial.println("Wifi got IP as event");
+	});
+
+
+
 	if (WiFi.isConnected())
 	{
 		Serial.println("WiFi connected!");
@@ -80,13 +114,21 @@ void setup()
         udp.onPacket([](AsyncUDPPacket packet) {
           Serial.println("Received data");
           size_t len = packet.length();
-          strcpy((char*)incomingPacket, (char*)packet.data());
-          deserializeJson(json, incomingPacket);
+          //strcpy((char*)incomingPacket, (char*)packet.data());
+          deserializeJson(json, packet.data());
           analyzeRecievedJson();
         });
    } else {
       Serial.println("Failure Listening to UDP");
    }
+}
+
+rgb ColorToRGB(uint32_t c) {
+  rgb color = {0,0,0};
+  color.red = ((c >> 16) & 0xFF);
+  color.green = ((c >> 8) & 0xFF);
+  color.blue = ((c) & 0xFF);
+  return color;
 }
 
 void loop()
@@ -98,50 +140,42 @@ void loop()
 		animation->render();
 		strip.show();
 	}
- delay(1);
+	delay(1);
 }
-struct rgb ColorToRGB(uint32_t c) {
-  rgb color = {0,0,0};
-  color.red = ((c >> 16) & 0xFF);
-  color.green = ((c >> 8) & 0xFF);
-  color.blue = ((c) & 0xFF);
-  return color;
-}
+
 void analyzeRecievedJson()
 {
 	if (currentInstance == -1)
 	{
 		currentInstance = json["instance"].as<int16_t>();
 	}
-  // Reset Sequence if master restarted
-  if(json["runtime"].as<int16_t>() < (now - last_frame)) {
-    currentSequence = 0;  
-  }
-	if (json["serial"].as<int16_t>() <= currentSequence || json["instance"].as<int16_t>() != currentInstance)
+	// Reset Sequence if master restarted
+	if(json["runtime"].as<int16_t>() < (now - last_frame)) {
+		currentSequence = 0;
+	}
+
+	if (currentSequence > -2)
+	{
+		sequenceFile.close();
+		sequenceFile = SPIFFS.open(SEQUENCE_FILE_PATH, "w+");
+		serializeJson(json, sequenceFile);
+	}
+
+	if (json["serial"].as<int32_t>() <= currentSequence || json["instance"].as<int16_t>() != currentInstance)
 	{
 		return;
 	}
-	currentSequence = json["serial"].as<int16_t>();
+	currentSequence = json["serial"].as<int32_t>();
 	Serial.println("JSON accepted!");
 	animation->clearEffects();
 	JsonArray effects = json["effects"];
-	for (int8_t i = 0; i < effects.size(); i++)
+	for (JsonObject effect: effects)
 	{
-		JsonObject effect = effects[i];
 		String effectType = effect["type"].as<String>();
 		Serial.println("Found effect: " + effectType);
-		/*IfEffect("fill", FillEffect, ColorToRGB(effect["color"].as<uint32_t>()))
+		IfEffect("fill", FillEffect, ColorToRGB(effect["color"].as<uint32_t>()))
 		else IfEffect("sine", SineEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
-		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())*/
-    if(effectType=="fill") {
-      Serial.println("Fill Effect");
-      animation->addEffect(new FillEffect(animation, ColorToRGB(effect["color"].as<uint32_t>())));
-    } else if(effectType=="sine") {
-      Serial.println("Sine Effect");
-      animation->addEffect(new SineEffect(animation, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>()));
-    } else if(effectType=="pix") {
-      Serial.println("Pix Effect");
-      animation->addEffect(new PixEffect(animation, ColorToRGB(effect["color"].as<uint32_t>()), effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>()));
-    }
+		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()),
+					  effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
 	}
 }

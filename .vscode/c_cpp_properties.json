@@ -6,7 +6,10 @@
                 "${env:USERPROFILE}\\Documents\\Arduino\\libraries\\ArduinoJson\\src",
                 "${env:USERPROFILE}\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel",
                 "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\tools\\**",
-                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.1\\**"
+                "${env:LocalAppData}\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.1\\**",
+                "${env:USERPROFILE}\\Documents\\Arduino\\libraries\\ESPAsyncUDP-master\\**",
+                "C:\\Users\\kuyateh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.1\\**",
+                "C:\\Users\\kuyateh\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",
