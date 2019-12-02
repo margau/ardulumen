@@ -33,6 +33,7 @@ PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor:
 uint8_t incomingPacket[1024];
 
 WiFiEventHandler mConnectHandler;
+WiFiEventHandler mDisconnectHandler;
 
 
 // Some constants
@@ -53,6 +54,7 @@ uint32_t now = 0;
 int32_t currentSequence = -1;
 int16_t currentInstance = -1;
 File sequenceFile;
+bool newPacket = false;
 
 void setup()
 {
@@ -73,15 +75,16 @@ void setup()
 		json["serial"] = 0;
 		currentSequence = -2;
 		analyzeRecievedJson();
+		sequenceFile.close();
 	}
 	else
 	{
 		Serial.println("File not found!");
-		sequenceFile = SPIFFS.open(SEQUENCE_FILE_PATH, "w+");
 		animation->addEffect(new FillEffect(animation, {127,0,0}))
 			 ->addEffect(new SineEffect(animation, 25, 2000))
 			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
 	}
+
 
 	// setup strip
 	strip.begin();
@@ -114,9 +117,8 @@ void setup()
         udp.onPacket([](AsyncUDPPacket packet) {
           Serial.println("Received data");
           size_t len = packet.length();
-          //strcpy((char*)incomingPacket, (char*)packet.data());
-          deserializeJson(json, packet.data());
-          analyzeRecievedJson();
+          strcpy((char*)incomingPacket, (char*)packet.data());
+		  newPacket = true;
         });
    } else {
       Serial.println("Failure Listening to UDP");
@@ -136,6 +138,12 @@ void loop()
 	now = millis();
 	if ((now - last_frame) >= frame_delay)
 	{
+		if (newPacket)
+		{
+			deserializeJson(json, incomingPacket);
+			analyzeRecievedJson();
+			newPacket = false;
+		}
 		last_frame = now;
 		animation->render();
 		strip.show();
@@ -156,9 +164,9 @@ void analyzeRecievedJson()
 
 	if (currentSequence > -2)
 	{
-		sequenceFile.close();
 		sequenceFile = SPIFFS.open(SEQUENCE_FILE_PATH, "w+");
 		serializeJson(json, sequenceFile);
+		sequenceFile.close();
 	}
 
 	if (json["serial"].as<int32_t>() <= currentSequence || json["instance"].as<int16_t>() != currentInstance)
