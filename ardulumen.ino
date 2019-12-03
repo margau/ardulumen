@@ -20,9 +20,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include "src/pixelpp/PixelPP.hpp"
-#include "src/pixelpp/FillEffect.hpp"
-#include "src/pixelpp/SineEffect.hpp"
-#include "src/pixelpp/PixEffect.hpp"
+#include "src/pixelpp/effects.hpp"
 #include "FS.h"
 
 // Initialize Objects
@@ -81,7 +79,7 @@ void setup()
 	{
 		Serial.println("File not found!");
 		animation->addEffect(new FillEffect(animation, {127,0,0}))
-			 ->addEffect(new SineEffect(animation, 25, 2000))
+			 ->addEffect(new SawtoothEffect(animation, 25, 2000))
 			 ->addEffect(new PixEffect(animation, {0, 0, 255}, 500, 1));
 	}
 
