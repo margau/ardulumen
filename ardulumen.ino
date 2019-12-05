@@ -30,9 +30,6 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, 2, NEO_GRB + NEO_KHZ800);
 PixelPP* animation = new PixelPP(strip.numPixels(), strip.getPixels(), LEDColor::GRB);
 uint8_t incomingPacket[1024];
 
-WiFiEventHandler mConnectHandler;
-WiFiEventHandler mDisconnectHandler;
-
 
 // Some constants
 #define VERSION "0.0.1-dev"
@@ -91,16 +88,6 @@ void setup()
 
 	delay(5000);
 
-	mConnectHandler = WiFi.onStationModeConnected([](WiFiEventStationModeConnected e) {
-		Serial.println("Wifi connected as event");
-	});
-
-	WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP e) {
-		Serial.println("Wifi got IP as event");
-	});
-
-
-
 	if (WiFi.isConnected())
 	{
 		Serial.println("WiFi connected!");
@@ -110,25 +97,25 @@ void setup()
 		Serial.println("WiFi not connected!");
 	}
   // Listen on UDP Socket with callback
-  if(udp.listen(3333)) {
-    Serial.println("Listening on Port 3333");
-        udp.onPacket([](AsyncUDPPacket packet) {
-          Serial.println("Received data");
-          size_t len = packet.length();
-          strcpy((char*)incomingPacket, (char*)packet.data());
-		  newPacket = true;
-        });
-   } else {
-      Serial.println("Failure Listening to UDP");
-   }
+	if(udp.listen(3333)) {
+		Serial.println("Listening on Port 3333");
+			udp.onPacket([](AsyncUDPPacket packet) {
+			Serial.println("Received data");
+			size_t len = packet.length();
+			strcpy((char*)incomingPacket, (char*)packet.data());
+			newPacket = true;
+			});
+	} else {
+		Serial.println("Failure Listening to UDP");
+	}
 }
 
 rgb ColorToRGB(uint32_t c) {
-  rgb color = {0,0,0};
-  color.red = ((c >> 16) & 0xFF);
-  color.green = ((c >> 8) & 0xFF);
-  color.blue = ((c) & 0xFF);
-  return color;
+	return {
+		((c >> 16) & 0xFF),
+		((c >> 8) & 0xFF),
+		((c) & 0xFF)
+	};
 }
 
 void loop()
@@ -171,10 +158,12 @@ void analyzeRecievedJson()
 	{
 		return;
 	}
+
 	currentSequence = json["serial"].as<int32_t>();
 	Serial.println("JSON accepted!");
 	animation->clearEffects();
 	JsonArray effects = json["effects"];
+
 	for (JsonObject effect: effects)
 	{
 		String effectType = effect["type"].as<String>();
@@ -183,5 +172,6 @@ void analyzeRecievedJson()
 		else IfEffect("sine", SineEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()),
 					  effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
+		else IfEffect("sawtooth", SawtoothEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint8_t>())
 	}
 }
