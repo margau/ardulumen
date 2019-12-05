@@ -99,12 +99,12 @@ void setup()
   // Listen on UDP Socket with callback
 	if(udp.listen(3333)) {
 		Serial.println("Listening on Port 3333");
-			udp.onPacket([](AsyncUDPPacket packet) {
+		udp.onPacket([](AsyncUDPPacket packet) {
 			Serial.println("Received data");
 			size_t len = packet.length();
 			strcpy((char*)incomingPacket, (char*)packet.data());
 			newPacket = true;
-			});
+		});
 	} else {
 		Serial.println("Failure Listening to UDP");
 	}
