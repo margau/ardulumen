@@ -172,5 +172,6 @@ void analyzeRecievedJson()
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()),
 					  effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
 		else IfEffect("sawtooth", SawtoothEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
+    else IfEffect("dim", DimEffect, effect["value"].as<uint8_t>())
 	}
 }
