@@ -173,5 +173,6 @@ void analyzeRecievedJson()
 					  effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
 		else IfEffect("sawtooth", SawtoothEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
     else IfEffect("dim", DimEffect, effect["value"].as<uint8_t>())
+    else IfEffect("strobe", StrobeEffect, effect["on"].as<uint16_t>(), effect["off"].as<uint16_t>())
 	}
 }
