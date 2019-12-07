@@ -12,7 +12,6 @@
 #elif defined(ESP8266)
 // ESP8266 specific
 	#include <ESP8266WiFi.h>
-	#include <ESP8266HTTPClient.h>
   #include "ESPAsyncUDP.h"
 #endif
 
@@ -172,6 +171,6 @@ void analyzeRecievedJson()
 		else IfEffect("sine", SineEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
 		else IfEffect("pix", PixEffect, ColorToRGB(effect["color"].as<uint32_t>()),
 					  effect["f"].as<uint16_t>(), effect["c"].as<uint8_t>())
-		else IfEffect("sawtooth", SawtoothEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint8_t>())
+		else IfEffect("sawtooth", SawtoothEffect, effect["w"].as<uint8_t>(), effect["p"].as<uint16_t>())
 	}
 }
